@@ -14,14 +14,20 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.MediaRecorder;
 import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.SurfaceHolder.Callback;
+import android.view.SurfaceView;
 
 public class LogSensors implements SensorEventListener {
 	
 	private SensorManager sensorManager;
 	private List<Sensor> deviceSensors;
-	private HashSet<Thread> asyncWriters;
+	private boolean canStillRecord = false;
+	
+	/*private HashSet<Thread> asyncWriters;
 	private MediaRecorder mediaRecorder;
 	private Camera camera;
+	private SurfaceHolder surfaceHolder;*/
 	/*private Sensor accelSensor;
 	private Sensor lightSensor;
 	private Sensor magneticSensor;
@@ -78,9 +84,16 @@ public class LogSensors implements SensorEventListener {
 		sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
 		deviceSensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
 		recordDiagnosticInfo();
-		asyncWriters = new HashSet<Thread>();
+		canStillRecord = true;
+		/*asyncWriters = new HashSet<Thread>();*/
 		
-		camera = Camera.open();
+		/*camera = Camera.open();
+		SurfaceView surfaceView = (SurfaceView)activity.findViewById(R.id.surfaceView1);
+		surfaceHolder = surfaceView.getHolder();
+		surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+		surfaceHolder.addCallback(this);
+		camera.setPreviewDisplay(surfaceHolder);
+		camera.startPreview();
 		camera.unlock();
 		if (mediaRecorder == null) mediaRecorder = new MediaRecorder();
 		mediaRecorder.setCamera(camera);
@@ -89,20 +102,28 @@ public class LogSensors implements SensorEventListener {
 		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
 		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
 		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
-		mediaRecorder.setOutputFile(FileUtilities.getCameraOutStream().getFD());
+		mediaRecorder.setVideoSize(352, 288);
+		mediaRecorder.setVideoFrameRate(15);
+		mediaRecorder.setOutputFile(FileUtilities.getCameraOutFile().getAbsolutePath());
+		mediaRecorder.setPreviewDisplay(surfaceHolder.getSurface());
 		mediaRecorder.prepare();
-		mediaRecorder.start();
+		mediaRecorder.start();*/
 		
 	}
 	
 	public void stopSensors(Activity activity) throws InterruptedException {
+		/*
+		camera.stopPreview();
 		mediaRecorder.stop();
 		mediaRecorder.reset();
 		camera.lock();
+		*/
+		
 		sensorManager.unregisterListener(this);
-		for (Thread afw: asyncWriters) {
+		canStillRecord = false;
+		/*for (Thread afw: asyncWriters) {
 			afw.join(); //wait for the writer threads to finish up
-		}
+		}*/
 	}
 
 	@Override
@@ -113,12 +134,60 @@ public class LogSensors implements SensorEventListener {
 
 	@Override
 	public void onSensorChanged(SensorEvent se) {
-		Thread afw = new Thread(new AsyncFileWriter(se));
-		asyncWriters.add(afw);
-		afw.run(); // run it asynchronously so we don't block onSensorChanged()
+		if (canStillRecord) {
+			FileWriter writer;
+			if (se.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+				writer = FileUtilities.getAccelDataStream();
+				try {
+					writer.write(se.timestamp + "," + se.values[0] +
+							"," + se.values[1] + "," + se.values[2] + "\n");
+				} catch (IOException e) {
+					Log.e("asyncwriter-accel", e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			if (se.sensor.getType() == Sensor.TYPE_LIGHT) {
+				writer = FileUtilities.getLightDataStream();
+				try {
+					writer.write(se.timestamp + "," + se.values[0] + "\n");
+				} catch (IOException e) {
+					Log.e("asyncwriter-light", e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			if (se.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+				writer = FileUtilities.getMagneticDataStream();
+				try {
+					writer.write(se.timestamp + "," + se.values[0] + "," +
+							se.values[1] + "," + se.values[2] + "\n");
+				} catch (IOException e) {
+					Log.e("asyncwriter-magnets", e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			if (se.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+				writer = FileUtilities.getOrientationDataStream();
+				try {
+					writer.write(se.timestamp + "," + se.values[0] + "," +
+							se.values[1] + "," + se.values[2] + "\n");
+				} catch (IOException e) {
+					Log.e("asyncwriter-orientation", e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			if (se.sensor.getType() == Sensor.TYPE_TEMPERATURE) {
+				writer = FileUtilities.getTemperatureDataStream();
+				try {
+					writer.write(se.timestamp + "," + se.values[0] + "\n");
+				} catch (IOException e) {
+					Log.e("asyncwriter-temperature", e.getMessage());
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
-	class AsyncFileWriter implements Runnable {
+/*	class AsyncFileWriter implements Runnable {
 		private SensorEvent se;
 		
 		@Override
@@ -179,5 +248,20 @@ public class LogSensors implements SensorEventListener {
 			se = s;
 		}
 		
+	}*/
+
+	/*public void surfaceChanged(SurfaceHolder arg0, int arg1, int arg2, int arg3) {
+		// TODO Auto-generated method stub
+		
 	}
+
+	public void surfaceCreated(SurfaceHolder arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void surfaceDestroyed(SurfaceHolder arg0) {
+		// TODO Auto-generated method stub
+		
+	}*/
 }

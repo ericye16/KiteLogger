@@ -24,4 +24,9 @@
         android:text="@string/statusText"
         />
 
+    <SurfaceView
+        android:id="@+id/surfaceView1"
+        android:layout_width="88dp"
+        android:layout_height="72dp" />
+
 </LinearLayout>

@@ -26,7 +26,8 @@ public class FileUtilities {
 	private static FileWriter temperatureDataStream;
 	
 	//private static File cameraOutFile;
-	private static FileOutputStream cameraOutStream;
+	//private static FileOutputStream cameraOutStream;
+	//private static File cameraOutFile;
 	
 	public static String getRootFileName() {
 		GregorianCalendar cal = new GregorianCalendar();
@@ -66,8 +67,8 @@ public class FileUtilities {
 		orientationDataStream = new FileWriter(orientationDataFile);
 		File temperatureDataFile = new File(ourDir, rootString + "Temperature.txt");
 		temperatureDataStream = new FileWriter(temperatureDataFile);
-		File cameraOutFile = new File(ourDir, rootString + "Video.mp4");
-		cameraOutStream = new FileOutputStream(cameraOutFile);
+		//cameraOutFile = new File(ourDir, rootString + "Video.mp4");
+		//cameraOutStream = new FileOutputStream(cameraOutFile);
 		Log.d("fileutils", "Init'd");
 	}
 	
@@ -105,8 +106,12 @@ public class FileUtilities {
 		return temperatureDataStream;
 	}
 	
-	public static FileOutputStream getCameraOutStream() {
+	/*public static FileOutputStream getCameraOutStream() {
 		return cameraOutStream;
 	}
+	
+	public static File getCameraOutFile() {
+		return cameraOutFile;
+	}*/
 
 }
