@@ -2,6 +2,8 @@ KiteLogger
 ----------
 I wanted to fly a kite with a camera and some sensors attached to it.
 Just a small app to record the camera and sensor data at the same time.
+(Currently the camera part doesn't really work. Please let me know if you can fix it.
+The caveat is that I have to target API Level 7.)
 
 (c) 2013 Eric Ye. All code is licensed under the GPL V3.
 Let me know what you use it for -- I'd love to know!
