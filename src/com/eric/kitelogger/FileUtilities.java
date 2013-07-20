@@ -82,6 +82,7 @@ public class FileUtilities {
 		magneticDataStream.close();
 		orientationDataStream.close();
 		temperatureDataStream.close();
+		gpsDataStream.close();
 		Log.d("fileutils", "dest'd");
 	}
 	
