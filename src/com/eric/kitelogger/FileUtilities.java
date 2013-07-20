@@ -24,6 +24,7 @@ public class FileUtilities {
 	private static FileWriter magneticDataStream;
 	private static FileWriter orientationDataStream;
 	private static FileWriter temperatureDataStream;
+	private static FileWriter gpsDataStream;
 	
 	//private static File cameraOutFile;
 	//private static FileOutputStream cameraOutStream;
@@ -67,6 +68,8 @@ public class FileUtilities {
 		orientationDataStream = new FileWriter(orientationDataFile);
 		File temperatureDataFile = new File(ourDir, rootString + "Temperature.txt");
 		temperatureDataStream = new FileWriter(temperatureDataFile);
+		File GPSDataFile = new File(ourDir, rootString + "GPS.txt");
+		gpsDataStream = new FileWriter(GPSDataFile);
 		//cameraOutFile = new File(ourDir, rootString + "Video.mp4");
 		//cameraOutStream = new FileOutputStream(cameraOutFile);
 		Log.d("fileutils", "Init'd");
@@ -104,6 +107,10 @@ public class FileUtilities {
 	
 	public static FileWriter getTemperatureDataStream() {
 		return temperatureDataStream;
+	}
+	
+	public static FileWriter getGPSDataStream() {
+		return gpsDataStream;
 	}
 	
 	/*public static FileOutputStream getCameraOutStream() {

@@ -12,17 +12,22 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.MediaRecorder;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 
-public class LogSensors implements SensorEventListener {
+public class LogSensors implements SensorEventListener, LocationListener {
 	
 	private SensorManager sensorManager;
 	private List<Sensor> deviceSensors;
 	private boolean canStillRecord = false;
+	private LocationManager locationManager;
 	
 	/*private HashSet<Thread> asyncWriters;
 	private MediaRecorder mediaRecorder;
@@ -83,6 +88,8 @@ public class LogSensors implements SensorEventListener {
 	public void startSensors(Activity activity) throws IOException {
 		sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
 		deviceSensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
+		locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 		recordDiagnosticInfo();
 		canStillRecord = true;
 		/*asyncWriters = new HashSet<Thread>();*/
@@ -118,7 +125,7 @@ public class LogSensors implements SensorEventListener {
 		mediaRecorder.reset();
 		camera.lock();
 		*/
-		
+		locationManager.removeUpdates(this);
 		sensorManager.unregisterListener(this);
 		canStillRecord = false;
 		/*for (Thread afw: asyncWriters) {
@@ -185,6 +192,41 @@ public class LogSensors implements SensorEventListener {
 				}
 			}
 		}
+	}
+
+	@Override
+	public void onLocationChanged(Location location) {
+		if (canStillRecord) {
+			FileWriter writer = FileUtilities.getGPSDataStream();
+			try {
+				writer.write(location.getTime() + "," + location.getLatitude() + "," +
+						location.getLongitude() + "," + location.getBearing() + "," +
+						location.getSpeed() + "," + location.getAltitude() + "," +
+						location.getAccuracy() + "," + location.getProvider() + "\n");
+			} catch (IOException e) {
+				Log.e("GPS-writer", e.getMessage());
+				e.printStackTrace();
+			}
+		}
+		
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+		// TODO Auto-generated method stub
+		
 	}
 	
 /*	class AsyncFileWriter implements Runnable {
