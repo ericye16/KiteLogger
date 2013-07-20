@@ -2,6 +2,7 @@ package com.eric.kitelogger;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 
 import android.app.Activity;
@@ -16,6 +17,7 @@ public class LogSensors implements SensorEventListener {
 	
 	private SensorManager sensorManager;
 	private List<Sensor> deviceSensors;
+	private HashSet<Thread> asyncWriters;
 	/*private Sensor accelSensor;
 	private Sensor lightSensor;
 	private Sensor magneticSensor;
@@ -72,10 +74,14 @@ public class LogSensors implements SensorEventListener {
 		sensorManager = (SensorManager) activity.getSystemService(Context.SENSOR_SERVICE);
 		deviceSensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
 		recordDiagnosticInfo();
+		asyncWriters = new HashSet<Thread>();
 	}
 	
-	public void stopSensors(Activity activity) {
+	public void stopSensors(Activity activity) throws InterruptedException {
 		sensorManager.unregisterListener(this);
+		for (Thread afw: asyncWriters) {
+			afw.join(); //wait for the writer threads to finish up
+		}
 	}
 
 	@Override
@@ -86,11 +92,12 @@ public class LogSensors implements SensorEventListener {
 
 	@Override
 	public void onSensorChanged(SensorEvent se) {
-		asyncFileWriter afw = new asyncFileWriter(se);
+		Thread afw = new Thread(new AsyncFileWriter(se));
+		asyncWriters.add(afw);
 		afw.run(); // run it asynchronously so we don't block onSensorChanged()
 	}
 	
-	class asyncFileWriter implements Runnable {
+	class AsyncFileWriter implements Runnable {
 		private SensorEvent se;
 		
 		@Override
@@ -144,9 +151,10 @@ public class LogSensors implements SensorEventListener {
 					e.printStackTrace();
 				}
 			}
+			asyncWriters.remove(Thread.currentThread());
 		}
 		
-		public asyncFileWriter(SensorEvent s) {
+		public AsyncFileWriter(SensorEvent s) {
 			se = s;
 		}
 		

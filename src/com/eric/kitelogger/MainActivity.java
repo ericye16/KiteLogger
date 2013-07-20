@@ -55,7 +55,7 @@ public class MainActivity extends Activity {
 		setStatusTextString();
 	}
 	
-	private void stopEverything() throws IOException {
+	private void stopEverything() throws IOException, InterruptedException {
 		logSensors.stopSensors(this);
 		FileUtilities.dest(this);
 		updateUI();
@@ -88,7 +88,7 @@ public class MainActivity extends Activity {
 		return true;
 	}
 	
-	public void changeState(View view) throws IOException {
+	public void changeState(View view) throws IOException, InterruptedException {
 		if (isLogging) {
 			loggingStatus = LoggingStatus.STOPPING;
 			stopEverything();
