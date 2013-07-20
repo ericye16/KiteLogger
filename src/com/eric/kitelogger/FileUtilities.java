@@ -1,6 +1,7 @@
 package com.eric.kitelogger;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Calendar;
@@ -23,6 +24,9 @@ public class FileUtilities {
 	private static FileWriter magneticDataStream;
 	private static FileWriter orientationDataStream;
 	private static FileWriter temperatureDataStream;
+	
+	//private static File cameraOutFile;
+	private static FileOutputStream cameraOutStream;
 	
 	public static String getRootFileName() {
 		GregorianCalendar cal = new GregorianCalendar();
@@ -62,6 +66,8 @@ public class FileUtilities {
 		orientationDataStream = new FileWriter(orientationDataFile);
 		File temperatureDataFile = new File(ourDir, rootString + "Temperature.txt");
 		temperatureDataStream = new FileWriter(temperatureDataFile);
+		File cameraOutFile = new File(ourDir, rootString + "Video.mp4");
+		cameraOutStream = new FileOutputStream(cameraOutFile);
 		Log.d("fileutils", "Init'd");
 	}
 	
@@ -97,6 +103,10 @@ public class FileUtilities {
 	
 	public static FileWriter getTemperatureDataStream() {
 		return temperatureDataStream;
+	}
+	
+	public static FileOutputStream getCameraOutStream() {
+		return cameraOutStream;
 	}
 
 }

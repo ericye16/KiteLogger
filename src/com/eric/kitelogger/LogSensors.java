@@ -7,10 +7,12 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
+import android.hardware.Camera;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.MediaRecorder;
 import android.util.Log;
 
 public class LogSensors implements SensorEventListener {
@@ -18,6 +20,8 @@ public class LogSensors implements SensorEventListener {
 	private SensorManager sensorManager;
 	private List<Sensor> deviceSensors;
 	private HashSet<Thread> asyncWriters;
+	private MediaRecorder mediaRecorder;
+	private Camera camera;
 	/*private Sensor accelSensor;
 	private Sensor lightSensor;
 	private Sensor magneticSensor;
@@ -75,9 +79,26 @@ public class LogSensors implements SensorEventListener {
 		deviceSensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
 		recordDiagnosticInfo();
 		asyncWriters = new HashSet<Thread>();
+		
+		camera = Camera.open();
+		camera.unlock();
+		if (mediaRecorder == null) mediaRecorder = new MediaRecorder();
+		mediaRecorder.setCamera(camera);
+		mediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
+		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+		mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
+		mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+		mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.DEFAULT);
+		mediaRecorder.setOutputFile(FileUtilities.getCameraOutStream().getFD());
+		mediaRecorder.prepare();
+		mediaRecorder.start();
+		
 	}
 	
 	public void stopSensors(Activity activity) throws InterruptedException {
+		mediaRecorder.stop();
+		mediaRecorder.reset();
+		camera.lock();
 		sensorManager.unregisterListener(this);
 		for (Thread afw: asyncWriters) {
 			afw.join(); //wait for the writer threads to finish up
