@@ -16,11 +16,11 @@ public class LogSensors implements SensorEventListener {
 	
 	private SensorManager sensorManager;
 	private List<Sensor> deviceSensors;
-	private Sensor accelSensor;
+	/*private Sensor accelSensor;
 	private Sensor lightSensor;
 	private Sensor magneticSensor;
 	private Sensor orientationSensor;
-	private Sensor temperatureSensor;
+	private Sensor temperatureSensor;*/
 	
 	private void recordDiagnosticInfo() throws IOException {
 		Sensor s;
@@ -31,26 +31,33 @@ public class LogSensors implements SensorEventListener {
 			String info;
 			if (s.getType() == Sensor.TYPE_ACCELEROMETER) {
 				use = true;
-				accelSensor = s;
+				//accelSensor = s;
 			}
 			if (s.getType() == Sensor.TYPE_LIGHT) {
 				use = true;
-				lightSensor = s;
+				//lightSensor = s;
 			}
 			if (s.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
 				use = true;
-				magneticSensor = s;
+				//magneticSensor = s;
 			}
 			if (s.getType() == Sensor.TYPE_ORIENTATION) {
 				use = true;
-				orientationSensor = s;
+				//orientationSensor = s;
 			}
 			if (s.getType() == Sensor.TYPE_TEMPERATURE) {
 				use = true;
-				temperatureSensor = s;
+				//temperatureSensor = s;
 			}
 			if (writer != null && use) {
-				info = s.getName() + " " + s.getVendor() + " " + s.getVersion() + " " + s.getResolution() + "\n";
+				info = String.format("Sensor Name: %s\n" + 
+						"Vendor: %s\n" +
+						"Version: %d\n" +
+						"Resolution: %f\n" +
+						"Power: %f\n" +						
+						"\n\n",
+						s.getName(), s.getVendor(), s.getVersion(),
+						s.getResolution(), s.getPower());
 				Log.d("sensors", info);
 				writer.write(info);	
 			}
@@ -78,9 +85,70 @@ public class LogSensors implements SensorEventListener {
 	}
 
 	@Override
-	public void onSensorChanged(SensorEvent arg0) {
+	public void onSensorChanged(SensorEvent se) {
+		asyncFileWriter afw = new asyncFileWriter(se);
+		afw.run(); // run it asynchronously so we don't block onSensorChanged()
+	}
+	
+	class asyncFileWriter implements Runnable {
+		private SensorEvent se;
 		
+		@Override
+		public void run() {
+			FileWriter writer;
+			if (se.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+				writer = FileUtilities.getAccelDataStream();
+				try {
+					writer.write(se.timestamp + "," + se.values[0] +
+						"," + se.values[1] + "," + se.values[2] + "\n");
+				} catch (IOException e) {
+					Log.e("asyncwriter-accel", e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			if (se.sensor.getType() == Sensor.TYPE_LIGHT) {
+				writer = FileUtilities.getLightDataStream();
+				try {
+					writer.write(se.timestamp + "," + se.values[0] + "\n");
+				} catch (IOException e) {
+					Log.e("asyncwriter-light", e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			if (se.sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD) {
+				writer = FileUtilities.getMagneticDataStream();
+				try {
+					writer.write(se.timestamp + "," + se.values[0] + "," +
+							se.values[1] + "," + se.values[2] + "\n");
+				} catch (IOException e) {
+					Log.e("asyncwriter-magnets", e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			if (se.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+				writer = FileUtilities.getOrientationDataStream();
+				try {
+					writer.write(se.timestamp + "," + se.values[0] + "," +
+							se.values[1] + "," + se.values[2] + "\n");
+				} catch (IOException e) {
+					Log.e("asyncwriter-orientation", e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			if (se.sensor.getType() == Sensor.TYPE_TEMPERATURE) {
+				writer = FileUtilities.getTemperatureDataStream();
+				try {
+					writer.write(se.timestamp + "," + se.values[0] + "\n");
+				} catch (IOException e) {
+					Log.e("asyncwriter-temperature", e.getMessage());
+					e.printStackTrace();
+				}
+			}
+		}
 		
+		public asyncFileWriter(SensorEvent s) {
+			se = s;
+		}
 		
 	}
 }
