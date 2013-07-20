@@ -72,6 +72,7 @@ public class FileUtilities {
 		magneticDataStream.close();
 		orientationDataStream.close();
 		temperatureDataStream.close();
+		Log.d("fileutils", "dest'd");
 	}
 	
 	public static FileWriter getEnviroDataStream() {

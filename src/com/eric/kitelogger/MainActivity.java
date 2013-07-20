@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.app.Activity;
+import android.content.Context;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
@@ -62,6 +63,7 @@ public class MainActivity extends Activity {
 	}
 	
 	private void startEverything() throws IOException {
+		pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
 		wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "main");
 		wl.acquire();
 		FileUtilities.init(this);
